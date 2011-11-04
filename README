@@ -1,0 +1,45 @@
+This can be used to measure the speed of memory operations on a variety of
+working set sizes.
+
+Running on my machine (Intel(R) Core(TM) i7 CPU 920 @ 2.67GHz) gives the
+following:
+
+bug:~/co/cache-detector$ ./cache-detector 
+# (cycles per memory op) * 10
+# bytes of memory accessed in random order
+   38      512
+   28      768
+   28     1024
+   30     1536
+   33     2048
+   37     3072
+   39     4096
+   48     6144
+   48     8192
+   47    12288
+   47    16384
+   47    24576
+   47    32768
+  102    49152
+  102    65536
+  102    98304
+  103   131072
+  107   196608
+  305   262144
+  408   393216
+  441   524288
+  455   786432
+  459  1048576
+  465  1572864
+  470  2097152
+  504  3145728
+  531  4194304
+  998  6291456
+ 1346  8388608
+ 1870 12582912
+ 1963 16777216
+ 2034 25165824
+
+which shows a decrease in speed going from 32k -> 48k, from 192k -> 376k, and
+going from 4MB -> 12MB.  My machine has L1 == 32k, L2 == 256k, and L3 == 8MB
+(from x86info utility).

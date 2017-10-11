@@ -42,3 +42,13 @@ LOCAL_SHARED_LIBRARIES :=   \
 LOCAL_STATIC_LIBRARIES:=
 
 include $(BUILD_EXECUTABLE)
+
+
+ifeq ($(HOST_OS),linux)
+include $(CLEAR_VARS)
+LOCAL_MODULE := calibrator
+LOCAL_SRC_FILES:= calibrator.cc
+LOCAL_LDLIBS += -lpthread
+LOCAL_CPP_EXTENSION := .cc
+include $(BUILD_HOST_EXECUTABLE)
+endif

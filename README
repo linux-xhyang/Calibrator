@@ -1,45 +1,141 @@
-This can be used to measure the speed of memory operations on a variety of
-working set sizes.
+Link from : https://homepages.cwi.nl/~manegold/Calibrator/
 
-Running on my machine (Intel(R) Core(TM) i7 CPU 920 @ 2.67GHz) gives the
-following:
+The Calibrator (v0.9e), a Cache-Memory and TLB Calibration Tool
 
-bug:~/co/cache-detector$ ./cache-detector 
-# (cycles per memory op) * 10
-# bytes of memory accessed in random order
-   38      512
-   28      768
-   28     1024
-   30     1536
-   33     2048
-   37     3072
-   39     4096
-   48     6144
-   48     8192
-   47    12288
-   47    16384
-   47    24576
-   47    32768
-  102    49152
-  102    65536
-  102    98304
-  103   131072
-  107   196608
-  305   262144
-  408   393216
-  441   524288
-  455   786432
-  459  1048576
-  465  1572864
-  470  2097152
-  504  3145728
-  531  4194304
-  998  6291456
- 1346  8388608
- 1870 12582912
- 1963 16777216
- 2034 25165824
+Introduction
+The Source Code and how to compile it
+Binary Executables
+How to use The Calibrator
+Sample Output
+The Calibrated Hardware Database
+Request for Contributions and Feedback
 
-which shows a decrease in speed going from 32k -> 48k, from 192k -> 376k, and
-going from 4MB -> 12MB.  My machine has L1 == 32k, L2 == 256k, and L3 == 8MB
-(from x86info utility).
+1. Introduction
+
+The Calibrator is a small C program that is supposed to analyze a computers (cache-) memory system and extract the following parameters:
+number of cache levels
+for each cache level:
+its size
+its linesize
+its access/miss latency
+main memory access latency
+number of TLB levels
+for each TLB level:
+its capacity (i.e. number of entries)
+the pagesize used
+the TLB miss latency
+A short description of the Calibrator is available as PDF or PostScript document.
+The Calibrator is a by-product of our work on Main-Memory Databases within the MonetDB project.
+
+The Calibrator is freely available for download and usage, but we kindly ask all users to include a reference to the Calibrator's home page (http://www.cwi.nl/~manegold/Calibrator/) whenever they refer to the Calibrator or publish calibration results.
+
+2. The Source Code and how to compile it
+
+To compile the Calibrator on a UNIX-System, just run
+  [Cc] calibrator.c -o calibrator -lm
+where [Cc] is your favorite C compiler.
+To compile the Calibrator on a Windows-System ('95, '98, 2000, NT),
+
+get the latest (>=1.0) cygwin binary distribution from here
+open a cygnus window, cd to the Calibrator directory
+compile with:
+  gcc -mno-cygwin -DWIN32 calibrator.c -o calibrator.exe -lwinmm
+3. Binary Executables
+
+Binary executables of the Calibrator are currently available for the following platforms:
+AIX	103 KB	executable (RISC System/6000 V3.1) or obj module not stripped
+IRIX	62 KB	ELF 32-bit MSB mips-1 executable, MIPS R3000_BE, version 1, dynamically linked (uses shared libs), not stripped
+IRIX64	57 KB	ELF 32-bit N32 MSB mips-4 executable, MIPS R3000_BE, version 1, dynamically linked (uses shared libs), stripped
+Linux (i386)	38 KB	ELF 32-bit LSB executable, Intel 80386, version 1, dynamically linked (uses shared libs), not stripped
+OSF1	65 KB	COFF format alpha executable paged dynamically linked not stripped - version 3.11-10
+SunOS	60 KB	ELF 32-bit MSB executable, SPARC, version 1, dynamically linked (uses shared libs), not stripped
+Win32	48 KB	MS Windows PE 32-bit Intel 80386 console executable not relocatable
+4. How to use The Calibrator
+
+To run the Calibrator, you need to give three parameters, i.e.,
+
+  calibrator [MHz] [size] [filename]
+[MHz]
+gives the CPU's clock speed in Mega Hertz (MHz).
+[size]
+gives the amount of memory to be used. [size] should be smaller than the total amount of main memory, but it should be significantly bigger than the maximum cache size expected.
+[size] is interpreted as bytes; suffixes "k" ("kilo" = 1024), "M" ("Mega" = 10242), and "G" ("Giga" = 10243) may be used.
+[filename]
+gives the filename for the result files.
+5. Sample Output
+
+The Calibrator creates output like (AMD Athlon "Thunderbird" 1 GHz in an ASUS A7V):
+Calibrator v0.9e
+(by Stefan.Manegold@cwi.nl, http://www.cwi.nl/~manegold/)
+
+CPU loop + L1 access:       3.00 ns =   3 cy
+             ( delay:     100.17 ns = 100 cy )
+
+caches:
+level  size    linesize   miss-latency        replace-time
+  1     64 KB   64 bytes    8.42 ns =   8 cy   17.11 ns =  17 cy
+  2    320 KB   64 bytes  155.75 ns = 156 cy  146.38 ns = 146 cy
+
+TLBs:
+level #entries  pagesize  miss-latency
+  1       24       4 KB     5.14 ns =   5 cy
+  2      320       4 KB    25.06 ns =  25 cy
+The "replace-time" is the penalty for a cache-miss on a busy bus, i.e., when each miss is immediately followed by the next one. The "miss-latency" is the penalty for a cache-miss on an idle bus, i.e., when there is a delay of ~100 cycles between two subsequent cache misses without any other bus traffic. On a PentiumIII and on the first Athlons, both values are equal. On the Thunderbird, for an L1 miss, "replace-time" it about twice as high as "miss-latency", probably due to the extended traffic caused by the exclusive L2 cache.
+The main memory access latency is then just the sum of the miss-latencies of all cache levels.
+
+Additionally, the Calibrator creates six files:
+[filename].cache-replace-time.data,
+[filename].cache-miss-latency.data,
+[filename].TLB-miss-latency.data:
+the results of the analysis for the cache system and the TLB, respectively.
+
+[filename].cache-replace-time.gp,
+[filename].cache-miss-latency.gp,
+[filename].TLB-miss-latency.gp:
+gnuplot scripts to visualize the results.
+Running
+ gnuplot [filename].cache-replace-time.gp
+ gnuplot [filename].cache-miss-latency.gp
+ gnuplot [filename].TLB-miss-latency.gp
+creates the respective files with the plots. By default, these gnuplot scripts generate PostScript files
+ [filename].cache-replace-time.ps
+ [filename].cache-miss-latency.ps
+ [filename].TLB-miss-latency.ps.
+By commenting-out the terminal settings for PostScript and un-commenting those for GIF in the .gp files, GIF files
+ [filename].cache-replace-time.gif
+ [filename].cache-miss-latency.gif
+ [filename].TLB-miss-latency.gif
+can be created instead.
+
+For Win32 users, there is gnuplot for windows.
+Mode of operation:
+Unzip the file, and put the directory where the wgnuplot.exe file is in your PATH.
+To view the plots you produced with the Calibrator interactively, rather than produce postscript output, uncomment the first two lines the .gp files:
+  edit MYMACHINE.cache-replace-time.gp :
+  place # in front of: set term ...
+  place # in front of: set output ...
+(similarly for MYMACHINE.cache-miss-latency.gp and MYMACHINE.TLB-miss-latency.gp ).
+Then you can invoke gnuplot:
+  c:> wgnuplot
+Inside the gnuplot prompt, you go to the directory where your calibortor files are:
+  gnuplot> cd "c:\calibrator"
+(note the double quotes).
+Then load the command file to produce the plots:
+  gnuplot> load "MYMACHINE.cache-replace-time.gp"
+
+6. The Calibrated Hardware Database
+
+The Calibrated Hardware Database already contains the Calibrator results for more than 50 different machines.
+(Thanks to Carsten Franke, Peter Boncz, and Brian Neil.)
+Thanks to Kai Schmerer of ZDNet.de for providing me with some first result for a Pentium 4/1500 with Rambus as well as for an Athlon/1000 with DDR-SDRAM.
+
+7. Request for Contributions and Feedback
+
+If anybody reading this has (access to) a machine with Rambus-memory or DDR-SDRAM, I'd be very pleased, if he/she could run the Calibrator on that machine and send me the results. I'm very curious, whether the memory-access-latency (i.e., L1-miss-latency + L2-miss-latency) is (significantly) less than that of PC100/PC133-memory based systems (~140ns) or even less than the "fastest" system I ever tested: a PowerMAC G4 with just ~100ns (see http://www.cwi.nl/~manegold/Calibrator/DB/ for an overview of machines that I've already tested).
+Of course, the same holds for anyone having (access to) a Pentium 4. I'd really like to know how the Pentium 4's caches compare to those of a PentiumIII or Athlon...
+
+Please feel free to use the Calibrator and to report any kind of feed back (e.g., results, problems, hints, critiques, suggestions, ...) to
+Stefan Manegold (Stefan.Manegold@cwi.nl)
+
+Thu Jun 24 19:48:00 2004, Stefan Manegold, Stefan.Manegold@cwi.nl
+(CWI's disclaimer)

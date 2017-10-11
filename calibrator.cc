@@ -1103,6 +1103,7 @@ int real_priority()
     // Set the priority; others are unchanged.
     printf("Log: Changing priority to SCHED_FIFO %d\n",
            param.sched_priority);
+    //ubuntu cannot do,must boot with command line : cgroup_disable=cpu,cpuset,memory
     if (sched_setscheduler(0, SCHED_FIFO, &param)) {
         printf("Process Error: sched_setscheduler "
                "failed - error %d\n",

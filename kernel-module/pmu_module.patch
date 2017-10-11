@@ -1,0 +1,28 @@
+diff --git a/lib/Kconfig b/lib/Kconfig
+index b09a87f..1b03dd0 100644
+--- a/lib/Kconfig
++++ b/lib/Kconfig
+@@ -459,6 +459,11 @@ config GTP
+ 	  See Documentation/trace/gtp.txt or
+ 	  https://code.google.com/p/kgtp/wiki/HOWTO for more info.
+ 
++config PMU_MODULE
++	tristate "Arm pmu module support"
++	depends on ARM64
++	---help---
++    enable arm pmu
+ 
+ source "lib/fonts/Kconfig"
+ 
+diff --git a/lib/Makefile b/lib/Makefile
+index ab4a994..07f1c494 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -165,6 +165,7 @@ obj-$(CONFIG_ASN1) += asn1_decoder.o
+ obj-$(CONFIG_FONT_SUPPORT) += fonts/
+ 
+ obj-$(CONFIG_GTP) += gtp.o
++obj-$(CONFIG_PMU_MODULE) += pmu_module.o
+ 
+ hostprogs-y	:= gen_crc32table
+ clean-files	:= crc32table.h

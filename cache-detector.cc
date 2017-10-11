@@ -28,9 +28,9 @@ return (high << 32) | low;
 int64_t virtual_timer_value;
 asm volatile("mrs %0, cntvct_el0" : "=r"(virtual_timer_value));
 return virtual_timer_value;
-aaa
 #elif defined(__ARM_ARCH)
 #if (__ARM_ARCH >= 6)  // V6 is the earliest arch that has a standard cyclecount
+//userspace has no permission set perf monitor counter,so need kernel module enable(kernel-module)
 uint32_t pmccntr;
 uint32_t pmuseren;
 uint32_t pmcntenset;

@@ -48,7 +48,7 @@ ifeq ($(HOST_OS),linux)
 include $(CLEAR_VARS)
 LOCAL_MODULE := calibrator
 LOCAL_SRC_FILES:= calibrator.cc
-LOCAL_LDLIBS += -lpthread
+LOCAL_LDLIBS += -lpthread -lrt
 LOCAL_CPP_EXTENSION := .cc
 include $(BUILD_HOST_EXECUTABLE)
 endif

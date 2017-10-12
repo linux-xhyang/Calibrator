@@ -78,6 +78,7 @@
 
 lng MINTIME = 500000;
 lng MHz;
+static int rdtsc_support = 0;
 #ifdef WIN32
 
 #include <Windows.h>
@@ -171,8 +172,9 @@ static inline uint64_t rdtsc(void)
  */
 lng now(void)
 {
-#if 1 //defined(__ARM_ARCH)
-    return rdtsc() * MHz / 1000;//ns
+#if 1
+    if(rdtsc_support)
+        return rdtsc() * MHz / 1000;//ns
 
     struct timespec now;
     clock_gettime(CLOCK_MONOTONIC, &now);
@@ -1224,6 +1226,9 @@ int main(int ac, char **av)
     TLBinfo	*TLB;
     lng	align = 0, pgsz  = getpagesize();
 
+    if(rdtsc() > 0){
+        rdtsc_support = 1;
+    }
     fprintf(stdout,"\nCalibrator v%s\n(by Stefan.Manegold@cwi.nl, http://www.cwi.nl/~manegold/)\n", VERSION);
 
     if (ac < 4) ErrXit("usage: '%s <MHz> <size>[k|M|G] <filename>`", av[0]);
@@ -1251,7 +1256,7 @@ int main(int ac, char **av)
 
 
     MINTIME = MAX( MINTIME, 10*getMINTIME() );
-    fprintf(stderr,"MINTIME = %ld getMINTIME() = %ld,sysconf(_SC_CLK_TCK) %d \n\n",MINTIME,getMINTIME(),sysconf(_SC_CLK_TCK) );
+    fprintf(stderr,"MINTIME = %ld getMINTIME() = %ld,rdtsc_support %d,sysconf(_SC_CLK_TCK) %d \n\n",MINTIME,getMINTIME(),rdtsc_support,sysconf(_SC_CLK_TCK) );
     fflush(stderr);
 
     sprintf(fnn1, "%s.cache-replace-time", av[3]);
